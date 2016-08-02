@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+
+    android:paddingTop="60dp"
+    android:paddingBottom="40dp"
+    >
+
+    <TextView
+        android:id="@+id/receiving"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal|top"
+        android:textSize="25sp"
+        android:layout_gravity="center"
+        android:text="전화가 왔습니다"
+        android:layout_weight="3"
+
+        />
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        >
+
+    <ImageButton
+        android:id="@+id/acccept"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:src="@drawable/accept"
+        android:background="@android:color/transparent"
+        android:paddingEnd="60dp"
+        />
+
+    <ImageButton
+        android:id="@+id/deny"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:src="@drawable/deny"
+        android:background="@android:color/transparent"
+         />
+
+        </LinearLayout>
+</LinearLayout>
