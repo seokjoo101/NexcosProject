@@ -41,8 +41,15 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
         } else if(action.equals("com.example.service.RECEIVEACCEPT")){
 
             Log.i(Global.TAG,"receive accept");
-            ReceiveActivity.contextMain.finish();
+            Intent i= new Intent(context, AcceptActivity.class );
+            PendingIntent pi_activity = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_ONE_SHOT);
+            try {
+                pi_activity.send();
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
 
+            CallActivity.contextMain.finish();
         }
 
        if(action.equals(intent.ACTION_BOOT_COMPLETED)) {

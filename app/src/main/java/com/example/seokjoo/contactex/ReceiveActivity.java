@@ -1,6 +1,7 @@
 package com.example.seokjoo.contactex;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -29,6 +30,15 @@ public class ReceiveActivity extends Activity {
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
+        // Append jumping dots
+        final TextView textView1 = (TextView) findViewById(R.id.receiving);
+        final JumpingBeans jp =JumpingBeans.with(textView1)
+                .makeTextJump(0, textView1.getText().toString().indexOf(' '))
+                .setIsWave(false)
+                .setLoopDuration(1000)
+                .appendJumpingDots()
+                .build();
+
 
         findViewById(R.id.acccept).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,6 +46,9 @@ public class ReceiveActivity extends Activity {
                 //전화 받았을때 peer connect 연결
 
                 MqttService.getInstance().publish(Global.ToTopic,"receiveaccept");
+                clickAccept();
+                jp.stopJumping();
+
             }
         });
         findViewById(R.id.deny).setOnClickListener(new View.OnClickListener() {
@@ -43,18 +56,20 @@ public class ReceiveActivity extends Activity {
             public void onClick(View view) {
 
                 MqttService.getInstance().publish(Global.ToTopic,"receivecancel");
+
                 ReceiveActivity.contextMain.finish();
+                jp.stopJumping();
 
             }
         });
 
-        // Append jumping dots
-        final TextView textView1 = (TextView) findViewById(R.id.receiving);
-        JumpingBeans.with(textView1)
-                .makeTextJump(0, textView1.getText().toString().indexOf(' '))
-                .setIsWave(false)
-                .setLoopDuration(1000)
-                .appendJumpingDots()
-                .build();
+
      }
+
+
+    void clickAccept(){
+        Intent i= new Intent(this, AcceptActivity.class );
+        startActivity(i);
+        ReceiveActivity.contextMain.finish();
+    }
 }

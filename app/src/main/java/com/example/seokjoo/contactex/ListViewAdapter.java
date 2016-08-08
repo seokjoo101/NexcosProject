@@ -71,13 +71,16 @@ public class ListViewAdapter extends BaseAdapter
                 (mContext, // 현재화면 제어권자
                         R.anim.button_click);      // 에니메이션 설정한 파일
 
-        //상대방에게 전화 거는 이미지뷰 클릭
+        //상대방에게 전화
         callImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i(Global.TAG, "click " + pos);
                 callImageView.startAnimation(anim);
+
                 MqttService.getInstance().publish(Global.ToTopic,"calling");
+
+
                 mContext.startActivity(new Intent(mContext,CallActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 
 

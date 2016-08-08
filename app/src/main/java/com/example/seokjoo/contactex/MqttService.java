@@ -77,13 +77,15 @@ public class MqttService extends Service implements MqttCallback {
 
         if(mInstance==null) mInstance = this;
 
-        if(sampleClient==null) {
+       /* if(sampleClient==null) {
             connectMQTT();
         }
         else if(sampleClient!=null && !sampleClient.isConnected()){
             Log.i(Global.TAG, "Service Start / MQTT : " +sampleClient.isConnected());
             connectMQTT();
-        }
+        }*/
+
+        connectMQTT();
 
 
         return super.onStartCommand(intent, flags, startId);

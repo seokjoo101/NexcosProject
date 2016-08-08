@@ -20,6 +20,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 
 public class MainActivity extends Activity {
 
+    private WebRtcClient client;
 
     ListView listview ;
     ListViewAdapter adapter;
@@ -78,6 +79,8 @@ public class MainActivity extends Activity {
             String[] phone_num = new String[end];
             int phone_num_count = 0;
 
+
+
             if(cursor.moveToFirst())
             {
                 // 컬럼명으로 컬럼 인덱스 찾기
@@ -123,7 +126,7 @@ public class MainActivity extends Activity {
 
                 } while(cursor.moveToNext() || count > end);
             }
-
+            //내 전화번호 찾기
             TelephonyManager telManager = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
             String phoneNum = telManager.getLine1Number();
 

@@ -1,8 +1,12 @@
 package com.example.seokjoo.contactex;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.os.Bundle;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -10,6 +14,8 @@ import android.widget.TextView;
 import com.example.seokjoo.contactex.global.Global;
 
 import net.frakbot.jumpingbeans.JumpingBeans;
+
+import java.io.IOException;
 
 /**
  * Created by Seokjoo on 2016-08-01.
@@ -19,7 +25,6 @@ public class CallActivity extends Activity {
     public static Activity contextMain;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,12 +32,13 @@ public class CallActivity extends Activity {
 
         // Append jumping dots
         final TextView textView1 = (TextView) findViewById(R.id.calling);
-        JumpingBeans.with(textView1)
+        final JumpingBeans jp =JumpingBeans.with(textView1)
                 .makeTextJump(0, textView1.getText().toString().indexOf(' '))
                 .setIsWave(false)
                 .setLoopDuration(1000)
                 .appendJumpingDots()
                 .build();
+
 
 
 
@@ -43,6 +49,8 @@ public class CallActivity extends Activity {
                 MqttService.getInstance().publish(Global.ToTopic,"callcancel");
 
                 CallActivity.contextMain.finish();
+
+                jp.stopJumping();
             }
         });
 
@@ -56,12 +64,9 @@ public class CallActivity extends Activity {
 
 
 
-        // Make the first word's letters jump
-     /*   final TextView textView2 = (TextView) findViewById(R.id.calling);
-        JumpingBeans.with(textView2)
-                .makeTextJump(0, textView2.getText().toString().length())
-                .setIsWave(true)
-                .setLoopDuration(1000)  // ms
-                .build();*/
     }
+
+
+
+
 }

@@ -5,8 +5,8 @@ package com.example.seokjoo.contactex.global;
  */
 public class Global {
 
-    public static final String TAG = "hustle";
-    public static String Mytopic="100";
-    public static String ToTopic="200";
+    public static final String TAG = "nexcos";
+    public static String Mytopic="200";
+    public static String ToTopic="100";
 
 }
