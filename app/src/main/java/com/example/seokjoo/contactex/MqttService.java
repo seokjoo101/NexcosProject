@@ -112,6 +112,8 @@ public class MqttService extends Service implements MqttCallback {
                 sampleClient.subscribe(Global.Mytopic, qos);
 
         } catch(MqttException me) {
+            Log.e(Global.TAG,"connect fail ");
+
             Log.i(Global.TAG,"reason "+me.getReasonCode());
             Log.i(Global.TAG,"msg "+me.getMessage());
             Log.i(Global.TAG,"loc "+me.getLocalizedMessage());
@@ -135,6 +137,7 @@ public class MqttService extends Service implements MqttCallback {
             sampleClient.getTopic(topicto).publish(message1);
 
         }catch(MqttException me) {
+            Log.e(Global.TAG,"publish fail ");
             Log.i(Global.TAG,"reason "+me.getReasonCode());
             Log.i(Global.TAG,"msg "+me.getMessage());
             Log.i(Global.TAG,"loc "+me.getLocalizedMessage());
@@ -152,7 +155,8 @@ public class MqttService extends Service implements MqttCallback {
 
     @Override
     public void connectionLost(Throwable cause) {
-        Log.e(Global.TAG,cause.getLocalizedMessage());
+        Log.e(Global.TAG,"connectionLost : " + cause.getLocalizedMessage());
+
 
     }
 
@@ -161,7 +165,6 @@ public class MqttService extends Service implements MqttCallback {
         Log.i(Global.TAG,"Arrived Topic  " + topic);
         Log.i(Global.TAG,"Arrived Message  " + message.toString());
 
-        String recevingMessage = message.toString();
 
 
         JSONObject payload = new JSONObject(message.toString());
@@ -204,16 +207,13 @@ public class MqttService extends Service implements MqttCallback {
             Global.ToTopic=payload.getString("myphone");
             Intent intent = new Intent("com.example.service.CALL");
             sendBroadcast(intent);
-        }
-
-
-        if(recevingMessage.equalsIgnoreCase("callcancel")){
+        }else if(payload.getString("type").equalsIgnoreCase("callcancel")){
             ReceiveActivity.contextMain.finish();
 
-        }else if(recevingMessage.equalsIgnoreCase("receivecancel")){
+        }else if(payload.getString("type").equalsIgnoreCase("receivecancel")){
             CallActivity.contextMain.finish();
 
-        }else if(recevingMessage.equalsIgnoreCase("receiveaccept")){
+        }else if(payload.getString("type").equalsIgnoreCase("receiveaccept")){
             Intent intent = new Intent("com.example.service.RECEIVEACCEPT");
             sendBroadcast(intent);
         }

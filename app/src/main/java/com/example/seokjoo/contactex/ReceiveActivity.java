@@ -3,6 +3,7 @@ package com.example.seokjoo.contactex;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -10,6 +11,9 @@ import android.widget.TextView;
 import com.example.seokjoo.contactex.global.Global;
 
 import net.frakbot.jumpingbeans.JumpingBeans;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by Seokjoo on 2016-08-01.
@@ -45,7 +49,14 @@ public class ReceiveActivity extends Activity {
             public void onClick(View view) {
                 //전화 받았을때 peer connect 연결
 
-                MqttService.getInstance().publish(Global.ToTopic,"receiveaccept");
+                JSONObject payload = new JSONObject();
+                try{
+                    payload.put("type","receiveaccept");
+                }catch(JSONException ex){
+                    Log.i(Global.TAG,"json fail " +ex);
+                }
+
+                MqttService.getInstance().publish(Global.ToTopic,payload.toString());
                 clickAccept();
                 jp.stopJumping();
 
@@ -55,7 +66,14 @@ public class ReceiveActivity extends Activity {
             @Override
             public void onClick(View view) {
 
-                MqttService.getInstance().publish(Global.ToTopic,"receivecancel");
+                JSONObject payload = new JSONObject();
+                try{
+                    payload.put("type","receivecancel");
+                }catch(JSONException ex){
+                    Log.i(Global.TAG,"json fail " +ex);
+                }
+
+                MqttService.getInstance().publish(Global.ToTopic,payload.toString());
 
                 ReceiveActivity.contextMain.finish();
                 jp.stopJumping();

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -14,6 +15,9 @@ import android.widget.TextView;
 import com.example.seokjoo.contactex.global.Global;
 
 import net.frakbot.jumpingbeans.JumpingBeans;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -46,7 +50,14 @@ public class CallActivity extends Activity {
             @Override
             public void onClick(View view) {
 
-                MqttService.getInstance().publish(Global.ToTopic,"callcancel");
+                JSONObject payload = new JSONObject();
+                try{
+                    payload.put("type","callcancel");
+                }catch(JSONException ex){
+                    Log.i(Global.TAG,"json fail " +ex);
+                }
+
+                MqttService.getInstance().publish(Global.ToTopic,payload.toString());
 
                 CallActivity.contextMain.finish();
 
