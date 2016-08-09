@@ -2,6 +2,7 @@ package com.example.seokjoo.contactex;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,9 @@ import android.widget.TextView;
 
 import com.example.seokjoo.contactex.global.Global;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -23,6 +27,8 @@ import java.util.ArrayList;
  */
 public class ListViewAdapter extends BaseAdapter
 {
+    private DbOpenHelper mDbOpenHelper;
+
     // Adapter에 추가된 데이터를 저장하기 위한 ArrayList
     private ArrayList<ListViewItem> listViewItemList = new ArrayList<ListViewItem>() ;
 
@@ -30,7 +36,10 @@ public class ListViewAdapter extends BaseAdapter
     // ListViewAdapter의 생성자
     public ListViewAdapter(Context context) {
         mContext=context;
+        mDbOpenHelper = new DbOpenHelper(context);
+        mDbOpenHelper.open();
     }
+
 
     // Adapter에 사용되는 데이터의 개수를 리턴. : 필수 구현
     @Override
@@ -78,7 +87,21 @@ public class ListViewAdapter extends BaseAdapter
                 Log.i(Global.TAG, "click " + pos);
                 callImageView.startAnimation(anim);
 
-                MqttService.getInstance().publish(Global.ToTopic,"calling");
+                Cursor aCursor = mDbOpenHelper.getColumn(pos+1);
+
+                Global.ToTopic=aCursor.getString(aCursor.getColumnIndex("phone"));
+
+                Log.i(Global.TAG, "toTopic " +aCursor.getString(aCursor.getColumnIndex("phone")));
+
+                JSONObject call = new JSONObject();
+                try{
+                    call.put("myphone",Global.Mytopic);
+                    call.put("type","calling");
+                }catch(JSONException ex){
+                    Log.i(Global.TAG,"json fail " +ex);
+                }
+
+                MqttService.getInstance().publish(Global.ToTopic,call.toString());
 
 
                 mContext.startActivity(new Intent(mContext,CallActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
