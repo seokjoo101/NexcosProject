@@ -77,17 +77,33 @@ public class ReceiveActivity extends Activity {
 
                 ReceiveActivity.contextMain.finish();
                 jp.stopJumping();
+                stopService(videoServiceIntent);
 
             }
         });
 
-
+        videoViewService=new VideoViewService();
+        startVideoService();
      }
+
+    VideoViewService videoViewService;
+    Intent videoServiceIntent=null;
+    private void startVideoService() {
+        videoServiceIntent = new Intent(this,VideoViewService.class);
+        this.startService(videoServiceIntent);
+    }
 
 
     void clickAccept(){
         Intent i= new Intent(this, AcceptActivity.class );
         startActivity(i);
         ReceiveActivity.contextMain.finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(videoServiceIntent!=null)
+            stopService(videoServiceIntent);
     }
 }

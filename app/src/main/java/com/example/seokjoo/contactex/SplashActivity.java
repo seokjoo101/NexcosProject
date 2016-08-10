@@ -1,10 +1,13 @@
 package com.example.seokjoo.contactex;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -13,6 +16,7 @@ import android.util.Log;
 
 import com.example.seokjoo.contactex.global.Global;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,11 +25,8 @@ import org.json.JSONObject;
  */
 public class SplashActivity extends Activity {
 
-    String myPhoneNum;
+     Handler hd ;
 
-    Handler hd ;
-
-    boolean isLogin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,20 +35,17 @@ public class SplashActivity extends Activity {
 
         hd = new Handler();
 
-        Log.e("ANDROES", "1 ");
+
 
         //내 전화번호 찾기
         TelephonyManager telManager = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
-        myPhoneNum = telManager.getLine1Number().substring(1);
+        Global.Mytopic = telManager.getLine1Number().substring(1);
 
-        Log.e("ANDROES", "내 전화번호 " + myPhoneNum);
-        Global.Mytopic=myPhoneNum;
-
-        startService(new Intent(getApplication(),MqttService.class));
-        phoneBook();
+        Log.e("ANDROES", "내 전화번호 " + Global.Mytopic);
 
 
-        hd.postDelayed(new splashhandler() , 1000);
+//        startService(new Intent(getApplication(),MqttService.class));
+        new MyTask().execute();
 
 
 
@@ -132,18 +130,12 @@ public class SplashActivity extends Activity {
                     }
                     name[count] = cursor.getString(1);
 
-                    // 개별 연락처 삭제
-                    // rowNum = getBaseContext().getContentResolver().delete(RawContacts.CONTENT_URI, RawContacts._ID+ " =" + id,null);
-
                     // LogCat에 로그 남기기
                     if(phone[count]!=null){
 
                         Log.i("ANDROES", "id=" + id +", name["+count+"]=" + name[count]+", phone["+count+"]=" + phone[count]);
 
 
-
-/*                        adapter.addItem(ContextCompat.getDrawable(this, R.drawable.ic_face_black_36dp),
-                                name[count], phone[count],ContextCompat.getDrawable(this,R.drawable.ic_videocam_black_36dp));*/
 
                         phone_num[phone_num_count++]=phone[count];
 
@@ -168,7 +160,7 @@ public class SplashActivity extends Activity {
         try {
             JSONObject payload = new JSONObject();
             payload.put("type", "contactoffer");
-            payload.put("myphone", myPhoneNum);
+            payload.put("myphone", Global.Mytopic);
             payload.put("yourname", name);
             payload.put("yourphone", phone);
 
@@ -177,4 +169,34 @@ public class SplashActivity extends Activity {
             Log.i(Global.TAG,"json fail " +ex);
         }
     }
+
+
+    public class MyTask extends AsyncTask {
+        @Override
+        protected void onPreExecute() {
+            //백그라운드 작업 전 UI 작업
+
+            super.onPreExecute();
+            Log.e("ANDROES", "1 ");
+        }
+
+        @Override
+        protected Object doInBackground(Object[] objects) {
+            Log.e("ANDROES", "2 ");
+
+            phoneBook();
+            return null;
+        }
+
+        //성공, 실패로 나누어서 실패시 재연결로 하기
+        @Override
+        protected void onPostExecute(Object o) {
+            Log.e("ANDROES", "3 ");
+
+            super.onPostExecute(o);
+            hd.post(new splashhandler());
+        }
+
+    }
+
 }

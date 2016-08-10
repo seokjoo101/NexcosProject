@@ -60,7 +60,12 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
             liveService(context);
         } else if(action.equals(intent.ACTION_USER_PRESENT)) {
             liveService(context);
-
+       } else if(action.equals(intent.ACTION_PACKAGE_RESTARTED)) {
+            liveService(context);
+       } else if(action.equals(intent.ACTION_PACKAGE_FIRST_LAUNCH)) {
+            liveService(context);
+       }else if(action.equals(intent.ACTION_PACKAGE_ADDED)) {
+           liveService(context);
        }
 
     }
@@ -76,6 +81,9 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
                 } catch (MqttException e) {
 
                 }
+            }else{
+                Log.i(Global.TAG,"Mqtt : " + MqttService.getInstance().sampleClient.isConnected() );
+
             }
         }
 
@@ -84,16 +92,12 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
             if (MqttService.class.getName().equals(service.service.getClassName())) {
                 Log.i(Global.TAG,"Service on" );
-                if(MqttService.getInstance().sampleClient!=null)
-                    Log.i(Global.TAG,"MqttConnet " + MqttService.getInstance().sampleClient.isConnected() );
-                 return true;
+                  return true;
             }
         }
         Log.e(Global.TAG,"Service off" );
-        startService(context);
+         startService(context);
 
-        if(MqttService.getInstance().sampleClient!=null)
-            Log.i(Global.TAG,"MqttConnet " + MqttService.getInstance().sampleClient.isConnected() );
         return false;
 
 

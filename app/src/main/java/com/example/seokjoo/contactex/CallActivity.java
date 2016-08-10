@@ -3,7 +3,10 @@ package com.example.seokjoo.contactex;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Point;
 import android.hardware.Camera;
+import android.opengl.GLSurfaceView;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -18,6 +21,14 @@ import net.frakbot.jumpingbeans.JumpingBeans;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.MediaConstraints;
+import org.webrtc.MediaStream;
+import org.webrtc.PeerConnectionFactory;
+import org.webrtc.RendererCommon;
+import org.webrtc.VideoCapturer;
+import org.webrtc.VideoRenderer;
+import org.webrtc.VideoRendererGui;
+import org.webrtc.VideoSource;
 
 import java.io.IOException;
 
@@ -43,9 +54,6 @@ public class CallActivity extends Activity {
                 .appendJumpingDots()
                 .build();
 
-
-
-
         findViewById(R.id.callOFF).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -61,6 +69,7 @@ public class CallActivity extends Activity {
 
                 CallActivity.contextMain.finish();
 
+                stopService(videoServiceIntent);
                 jp.stopJumping();
             }
         });
@@ -73,8 +82,24 @@ public class CallActivity extends Activity {
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
+        videoViewService=new VideoViewService();
+        startVideoService();
 
+    }
 
+    VideoViewService videoViewService;
+    Intent videoServiceIntent=null;
+    private void startVideoService() {
+        videoServiceIntent = new Intent(this,VideoViewService.class);
+        this.startService(videoServiceIntent);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(videoServiceIntent!=null)
+            stopService(videoServiceIntent);
     }
 
 

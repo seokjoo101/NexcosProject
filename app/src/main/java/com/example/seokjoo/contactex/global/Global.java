@@ -7,6 +7,9 @@ package com.example.seokjoo.contactex.global;
 
 public class Global {
     public static final String TAG = "nexcos";
+    public static final String TAG_ = "MyDataChannel";
+
+
     public static String Mytopic;
     public static String ToTopic;
 }

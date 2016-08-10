@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#F39C12"
 
     android:paddingTop="60dp"
     android:paddingBottom="40dp"
@@ -17,6 +18,7 @@
         android:layout_gravity="center"
         android:text="전화가 왔습니다"
         android:layout_weight="3"
+        android:textColor="@android:color/white"
 
         />
 

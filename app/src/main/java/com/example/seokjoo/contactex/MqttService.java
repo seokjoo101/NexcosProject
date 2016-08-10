@@ -39,8 +39,8 @@ public class MqttService extends Service implements MqttCallback {
     private ArrayList<DbInfo> mInfoArray;
 
     //싱글톤
-    public static MqttService getInstance(){
-        if(mInstance!=null)
+    public static MqttService getInstance() {
+        if (mInstance != null)
             return mInstance;
         else {
             return null;
@@ -66,11 +66,10 @@ public class MqttService extends Service implements MqttCallback {
     }
 
 
-
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
 
-        Log.i(Global.TAG, "Service Destroy" );
+        Log.i(Global.TAG, "Service Destroy");
 
         //Action Name Broadcast
         Intent intent = new Intent("com.example.service.DESTROY");
@@ -79,46 +78,46 @@ public class MqttService extends Service implements MqttCallback {
     }
 
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
 
-
-        if(mInstance==null) mInstance = this;
-
+        if (mInstance == null) mInstance = this;
 
 
         connectMQTT();
 
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
+//        return super.onStartCommand(intent, flags, startId);
     }
 
     private void connectMQTT() {
-        broker       = "tcp://61.38.158.169:1883";
-        clientId     = getDeviceSerialNumber();
-        int qos  = 1;
+        broker = "tcp://61.38.158.169:1883";
+        clientId = getDeviceSerialNumber();
+        int qos = 1;
 
         try {
             sampleClient = new MqttClient(broker, clientId, persistence);
 
 
+            if (!sampleClient.isConnected()) {
                 MqttConnectOptions connOpts = new MqttConnectOptions();
                 connOpts.setCleanSession(true);
 
                 sampleClient.connect(connOpts);
                 sampleClient.setCallback(this);
                 sampleClient.subscribe(Global.Mytopic, qos);
+                Log.e(Global.TAG, "connect : " + sampleClient.isConnected());
+            }
+        } catch (MqttException me) {
+            Log.e(Global.TAG, "connect fail ");
 
-        } catch(MqttException me) {
-            Log.e(Global.TAG,"connect fail ");
-
-            Log.i(Global.TAG,"reason "+me.getReasonCode());
-            Log.i(Global.TAG,"msg "+me.getMessage());
-            Log.i(Global.TAG,"loc "+me.getLocalizedMessage());
-            Log.i(Global.TAG,"cause "+me.getCause());
-            Log.i(Global.TAG,"excep"+me);
+            Log.i(Global.TAG, "reason " + me.getReasonCode());
+            Log.i(Global.TAG, "msg " + me.getMessage());
+            Log.i(Global.TAG, "loc " + me.getLocalizedMessage());
+            Log.i(Global.TAG, "cause " + me.getCause());
+            Log.i(Global.TAG, "excep" + me);
 
             me.printStackTrace();
 
@@ -126,54 +125,69 @@ public class MqttService extends Service implements MqttCallback {
     }
 
 
+    public void publish(String topicto, String message) {
 
-    public void publish(String topicto,String message){
+
+        try {
+            Log.i(Global.TAG, "Publishing message: " + message);
+
+            if (sampleClient.isConnected()) {
+                MqttMessage message1 = new MqttMessage(message.getBytes());
+                sampleClient.getTopic(topicto).publish(message1);
+            } else {
+                connectMQTT();
+            }
+
+        } catch (MqttException me) {
+
+            if (!sampleClient.isConnected()) {
+                Log.d(Global.TAG, "publish fail -> reconnect ");
+                connectMQTT();
+
+            }
 
 
-        try{
-            Log.i(Global.TAG,"Publishing message: "+ message);
-
-            MqttMessage message1= new MqttMessage(message.getBytes());
-            sampleClient.getTopic(topicto).publish(message1);
-
-        }catch(MqttException me) {
-            Log.e(Global.TAG,"publish fail ");
-            Log.i(Global.TAG,"reason "+me.getReasonCode());
-            Log.i(Global.TAG,"msg "+me.getMessage());
-            Log.i(Global.TAG,"loc "+me.getLocalizedMessage());
-            Log.i(Global.TAG,"cause "+me.getCause());
-            Log.i(Global.TAG,"excep"+me);
+            Log.e(Global.TAG, "publish fail ");
+            Log.i(Global.TAG, "reason " + me.getReasonCode());
+            Log.i(Global.TAG, "msg " + me.getMessage());
+            Log.i(Global.TAG, "loc " + me.getLocalizedMessage());
+            Log.i(Global.TAG, "cause " + me.getCause());
+            Log.i(Global.TAG, "excep" + me);
 
             me.printStackTrace();
 
         }
 
     }
-
-
 
 
     @Override
     public void connectionLost(Throwable cause) {
-        Log.e(Global.TAG,"connectionLost : " + cause.getLocalizedMessage());
+        Log.e(Global.TAG, "connectionLost : " + cause.getLocalizedMessage());
 
+        if (!sampleClient.isConnected()) {
+            Log.d(Global.TAG, "connection Lost -> reconnect ");
+            connectMQTT();
+
+        }
 
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        Log.i(Global.TAG,"Arrived Topic  " + topic);
-        Log.i(Global.TAG,"Arrived Message  " + message.toString());
-
+        Log.i(Global.TAG, "Arrived Topic  " + topic);
+        Log.i(Global.TAG, "Arrived Message  " + message.toString());
 
 
         JSONObject payload = new JSONObject(message.toString());
 
+        if (WebRtcClient.getmInstance() != null)
+            WebRtcClient.getmInstance().getMessage(message.toString());
 
-        if(payload.getString("type").equalsIgnoreCase("contactoffer")){
+        if (payload.getString("type").equalsIgnoreCase("contactoffer")) {
 
-            if(payload.has("answer")){
-                Log.i(Global.TAG,"contact answer 받음");
+            if (payload.has("answer")) {
+                Log.i(Global.TAG, "contact answer 받음");
 
 
                 mDbOpenHelper = new DbOpenHelper(this);
@@ -182,38 +196,30 @@ public class MqttService extends Service implements MqttCallback {
 
                 Cursor aCursor = mDbOpenHelper.getMatchPhone(payload.getString("yourphone"));
 
-                if(aCursor.getCount()==0){
-                    mDbOpenHelper.insertColumn(payload.getString("yourname"),payload.getString("yourphone"));
+                if (aCursor.getCount() == 0) {
+                    mDbOpenHelper.insertColumn(payload.getString("yourname"), payload.getString("yourphone"));
                 }
 
 
-                doWhileCursorToArray();
-                for (DbInfo i : mInfoArray) {
-                    Log.i(Global.TAG, "ID = " + i._id);
-                    Log.i(Global.TAG, "name = " + i.name);
-                    Log.i(Global.TAG, "phone = " + i.phone);
-
-                }
-
-            }else{
-                Log.i(Global.TAG,"contact offer 받음");
-                payload.put("answer",true);
-                MqttService.getInstance().publish(payload.getString("myphone"),payload.toString());
+            } else {
+                Log.i(Global.TAG, "contact offer 받음");
+                payload.put("answer", true);
+                MqttService.getInstance().publish(payload.getString("myphone"), payload.toString());
             }
         }
 
 
-        if(payload.getString("type").equalsIgnoreCase("calling")){
-            Global.ToTopic=payload.getString("myphone");
+        if (payload.getString("type").equalsIgnoreCase("calling")) {
+            Global.ToTopic = payload.getString("myphone");
             Intent intent = new Intent("com.example.service.CALL");
             sendBroadcast(intent);
-        }else if(payload.getString("type").equalsIgnoreCase("callcancel")){
+        } else if (payload.getString("type").equalsIgnoreCase("callcancel")) {
             ReceiveActivity.contextMain.finish();
 
-        }else if(payload.getString("type").equalsIgnoreCase("receivecancel")){
+        } else if (payload.getString("type").equalsIgnoreCase("receivecancel")) {
             CallActivity.contextMain.finish();
 
-        }else if(payload.getString("type").equalsIgnoreCase("receiveaccept")){
+        } else if (payload.getString("type").equalsIgnoreCase("receiveaccept")) {
             Intent intent = new Intent("com.example.service.RECEIVEACCEPT");
             sendBroadcast(intent);
         }
@@ -227,28 +233,8 @@ public class MqttService extends Service implements MqttCallback {
     @Override
     public void onRebind(Intent intent) {
         super.onRebind(intent);
-        Log.i(Global.TAG, "on Rebind" );
-
-    }
-
-
-    private void doWhileCursorToArray() {
-
-        mCursor = null;
-        mCursor = mDbOpenHelper.getAllColumns();
-        Log.i(Global.TAG, "COUNT = " + mCursor.getCount());
-
-        while (mCursor.moveToNext()) {
-
-            mInfoClass = new DbInfo(
-                    mCursor.getInt(mCursor.getColumnIndex("_id")),
-                    mCursor.getString(mCursor.getColumnIndex("name")),
-                    mCursor.getString(mCursor.getColumnIndex("phone"))
-            );
-            mInfoArray.add(mInfoClass);
-        }
-
-        mCursor.close();
+        Log.i(Global.TAG, "on Rebind");
 
     }
 }
+
