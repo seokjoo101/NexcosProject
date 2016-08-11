@@ -51,15 +51,15 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
     private static final int REMOTE_HEIGHT = 100;
 
 
-    private View windowView;
-    private WindowManager windowManager;
+    public View windowView;
+    public WindowManager windowManager;
     private WindowManager.LayoutParams windowViewLayoutParams;
     private WindowTouchPresenter windowTouchPresenter;
 
 
     private RendererCommon.ScalingType scalingType =  RendererCommon.ScalingType.SCALE_ASPECT_FILL;
-    private VideoRenderer.Callbacks localRender;
-    private VideoRenderer.Callbacks remoteRender;
+    public VideoRenderer.Callbacks localRender;
+    public VideoRenderer.Callbacks remoteRender;
     public WebRtcClient client;
 
     @BindView(R.id.glview_call)
@@ -93,10 +93,6 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
         windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         windowManager.getDefaultDisplay().getSize(displaySize);
 
-        /*if(windowView!=null){
-            vsv.setVisibility(View.VISIBLE);
-        }else
-           */
         initWindowLayout((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE));
 
 
@@ -236,9 +232,11 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
         super.onDestroy();
 
 
+/*
         VideoRendererGui.remove(localRender);
         VideoRendererGui.dispose();
         windowManager.removeViewImmediate(windowView);
+*/
 
      }
 
@@ -260,6 +258,10 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
         }
     }
 
+
+    public  void call(){
+        client.call(Global.ToTopic);
+    }
 
 
 }

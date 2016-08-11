@@ -36,7 +36,6 @@ public class SplashActivity extends Activity {
         hd = new Handler();
 
 
-
         //내 전화번호 찾기
         TelephonyManager telManager = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
         Global.Mytopic = telManager.getLine1Number().substring(1);
@@ -44,10 +43,9 @@ public class SplashActivity extends Activity {
         Log.e("ANDROES", "내 전화번호 " + Global.Mytopic);
 
 
-//        startService(new Intent(getApplication(),MqttService.class));
+        startService(new Intent(getApplication(),MqttService.class));
+
         new MyTask().execute();
-
-
 
     }
 

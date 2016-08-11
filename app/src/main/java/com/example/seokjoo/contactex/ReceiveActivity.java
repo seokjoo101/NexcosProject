@@ -14,6 +14,7 @@ import net.frakbot.jumpingbeans.JumpingBeans;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.VideoRendererGui;
 
 /**
  * Created by Seokjoo on 2016-08-01.
@@ -57,6 +58,7 @@ public class ReceiveActivity extends Activity {
                 }
 
                 MqttService.getInstance().publish(Global.ToTopic,payload.toString());
+                VideoViewService.getInstance().call();
                 clickAccept();
                 jp.stopJumping();
 
@@ -65,6 +67,11 @@ public class ReceiveActivity extends Activity {
         findViewById(R.id.deny).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //전화끊기
+                VideoRendererGui.dispose();
+                VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
+
+
 
                 JSONObject payload = new JSONObject();
                 try{
@@ -91,6 +98,7 @@ public class ReceiveActivity extends Activity {
     private void startVideoService() {
         videoServiceIntent = new Intent(this,VideoViewService.class);
         this.startService(videoServiceIntent);
+
     }
 
 

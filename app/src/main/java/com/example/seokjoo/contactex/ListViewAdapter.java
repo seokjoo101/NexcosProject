@@ -104,7 +104,9 @@ public class ListViewAdapter extends BaseAdapter
                 MqttService.getInstance().publish(Global.ToTopic,call.toString());
 
 
+
                 mContext.startActivity(new Intent(mContext,CallActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                MainActivity.contextMain.finish();
 
 
             }

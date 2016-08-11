@@ -10,6 +10,7 @@ import android.util.Log;
 import com.example.seokjoo.contactex.global.Global;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.webrtc.VideoRendererGui;
 
 /**
  * Created by Seokjoo on 2016-08-02.
@@ -40,9 +41,10 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
             }
         } else if(action.equals("com.example.service.RECEIVEACCEPT")){
 
-            Log.i(Global.TAG,"receive accept");
             Intent i= new Intent(context, AcceptActivity.class );
+            i.putExtra("call",true);
             PendingIntent pi_activity = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_ONE_SHOT);
+
             try {
                 pi_activity.send();
             } catch (PendingIntent.CanceledException e) {
@@ -50,6 +52,18 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
             }
 
             CallActivity.contextMain.finish();
+        }else if(action.equals("com.example.service.EXIT")){
+
+            Intent i= new Intent(context, MainActivity.class );
+            PendingIntent pi_activity = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_ONE_SHOT);
+
+            try {
+                pi_activity.send();
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
+
+            AcceptActivity.contextMain.finish();
         }
 
        if(action.equals(intent.ACTION_BOOT_COMPLETED)) {

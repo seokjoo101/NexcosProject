@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -8,11 +8,15 @@
     <SurfaceView
         android:id="@+id/screen"
         android:layout_width="match_parent"
-        android:layout_height="450dp" />
+        android:layout_height="430dp" />
 
-    <Button
+
+    <ImageButton
+        android:id="@+id/exit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="종료"
-        android:layout_gravity="right"/>
-</LinearLayout>
+        android:layout_gravity="bottom"
+        android:src="@drawable/deny"
+        android:background="@android:color/transparent"
+        />
+</FrameLayout>

@@ -1,6 +1,7 @@
 package com.example.seokjoo.contactex;
 
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,6 +20,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONObject;
+import org.webrtc.VideoRendererGui;
 
 import java.util.ArrayList;
 
@@ -34,9 +36,6 @@ public class MqttService extends Service implements MqttCallback {
 
     private DbOpenHelper mDbOpenHelper;
 
-    private Cursor mCursor;
-    private DbInfo mInfoClass;
-    private ArrayList<DbInfo> mInfoArray;
 
     //싱글톤
     public static MqttService getInstance() {
@@ -192,7 +191,6 @@ public class MqttService extends Service implements MqttCallback {
 
                 mDbOpenHelper = new DbOpenHelper(this);
                 mDbOpenHelper.open();
-                mInfoArray = new ArrayList<DbInfo>();
 
                 Cursor aCursor = mDbOpenHelper.getMatchPhone(payload.getString("yourphone"));
 
@@ -206,21 +204,32 @@ public class MqttService extends Service implements MqttCallback {
                 payload.put("answer", true);
                 MqttService.getInstance().publish(payload.getString("myphone"), payload.toString());
             }
-        }
-
-
-        if (payload.getString("type").equalsIgnoreCase("calling")) {
+        }else if (payload.getString("type").equalsIgnoreCase("calling")) {
             Global.ToTopic = payload.getString("myphone");
             Intent intent = new Intent("com.example.service.CALL");
             sendBroadcast(intent);
         } else if (payload.getString("type").equalsIgnoreCase("callcancel")) {
+
+            //전화끊기
+            VideoRendererGui.dispose();
+            VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
             ReceiveActivity.contextMain.finish();
 
         } else if (payload.getString("type").equalsIgnoreCase("receivecancel")) {
+            //전화끊기
+            VideoRendererGui.dispose();
+            VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
             CallActivity.contextMain.finish();
 
         } else if (payload.getString("type").equalsIgnoreCase("receiveaccept")) {
             Intent intent = new Intent("com.example.service.RECEIVEACCEPT");
+            sendBroadcast(intent);
+        }else if (payload.getString("type").equalsIgnoreCase("exit")) {
+            //전화끊기
+            VideoRendererGui.dispose();
+            VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
+
+            Intent intent = new Intent("com.example.service.EXIT");
             sendBroadcast(intent);
         }
     }

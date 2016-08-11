@@ -1,41 +1,29 @@
 package com.example.seokjoo.contactex;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Point;
-import android.hardware.Camera;
-import android.opengl.GLSurfaceView;
-import android.os.AsyncTask;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.seokjoo.contactex.global.Global;
+import com.example.seokjoo.contactex.global.VideoCodec;
 
 import net.frakbot.jumpingbeans.JumpingBeans;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.MediaConstraints;
-import org.webrtc.MediaStream;
-import org.webrtc.PeerConnectionFactory;
-import org.webrtc.RendererCommon;
-import org.webrtc.VideoCapturer;
-import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
-import org.webrtc.VideoSource;
-
-import java.io.IOException;
 
 /**
  * Created by Seokjoo on 2016-08-01.
  */
-public class CallActivity extends Activity {
+public class CallActivity extends Activity{
 
     public static Activity contextMain;
 
@@ -54,25 +42,6 @@ public class CallActivity extends Activity {
                 .appendJumpingDots()
                 .build();
 
-        findViewById(R.id.callOFF).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                JSONObject payload = new JSONObject();
-                try{
-                    payload.put("type","callcancel");
-                }catch(JSONException ex){
-                    Log.i(Global.TAG,"json fail " +ex);
-                }
-
-                MqttService.getInstance().publish(Global.ToTopic,payload.toString());
-
-                CallActivity.contextMain.finish();
-
-                stopService(videoServiceIntent);
-                jp.stopJumping();
-            }
-        });
 
 
 
@@ -85,6 +54,41 @@ public class CallActivity extends Activity {
         videoViewService=new VideoViewService();
         startVideoService();
 
+
+
+        findViewById(R.id.callOFF).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                //전화끊기
+                VideoRendererGui.dispose();
+                VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
+
+
+                JSONObject payload = new JSONObject();
+                try{
+                    payload.put("type","callcancel");
+                }catch(JSONException ex){
+                    Log.i(Global.TAG,"json fail " +ex);
+                }
+
+                MqttService.getInstance().publish(Global.ToTopic,payload.toString());
+
+                callMain();
+
+                stopService(videoServiceIntent);
+                jp.stopJumping();
+            }
+
+
+        });
+
+
+    }
+
+    private void callMain() {
+        startActivity(new Intent(this,MainActivity.class));
+        this.finish();
     }
 
     VideoViewService videoViewService;
@@ -101,8 +105,6 @@ public class CallActivity extends Activity {
         if(videoServiceIntent!=null)
             stopService(videoServiceIntent);
     }
-
-
 
 
 }

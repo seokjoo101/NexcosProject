@@ -10,6 +10,7 @@ import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.ListView;
 
 import com.example.seokjoo.contactex.global.Global;
@@ -21,8 +22,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
-    private WebRtcClient client;
-
     ListView listview ;
     ListViewAdapter adapter;
 
@@ -32,8 +31,7 @@ public class MainActivity extends Activity {
     private DbInfo mInfoClass;
     private ArrayList<DbInfo> mInfoArray;
     private Cursor mCursor;
-
-    String myPhoneNum;
+    public static Activity contextMain;
 
 
     @Override
@@ -56,7 +54,6 @@ public class MainActivity extends Activity {
 
 
 
-
         addFriendList();
         Log.i(Global.TAG,"Mytopic " +Global.Mytopic);
 
@@ -66,6 +63,12 @@ public class MainActivity extends Activity {
             Log.i(Global.TAG, "name = " + i.name);
             Log.i(Global.TAG, "phone = " + i.phone);
         }
+
+        contextMain=this;
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     }
 
 
