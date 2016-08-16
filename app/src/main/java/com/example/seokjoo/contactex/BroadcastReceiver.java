@@ -1,16 +1,16 @@
 package com.example.seokjoo.contactex;
 
 import android.app.ActivityManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.PowerManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.seokjoo.contactex.global.Global;
-
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.webrtc.VideoRendererGui;
 
 /**
  * Created by Seokjoo on 2016-08-02.
@@ -18,7 +18,7 @@ import org.webrtc.VideoRendererGui;
 public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
     private static PowerManager.WakeLock mWakeLock;
-
+    DbOpenHelper mDbOpenHelper;
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -27,60 +27,82 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
         Log.d(Global.TAG,"On receive " + action );
 
 
+
+
         //Action명으로 받는다
         if (action.equals("com.example.service.DESTROY")) {
             startService(context);
         }else if(action.equals("com.example.service.CALL")){
+
+
             releaseWakeLock();
-            Intent i= new Intent(context, ReceiveActivity.class );;
-            PendingIntent pi_activity = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_ONE_SHOT);
-            try {
-                pi_activity.send();
-            } catch (PendingIntent.CanceledException e) {
-                e.printStackTrace();
+            mDbOpenHelper=new DbOpenHelper(context);
+            mDbOpenHelper.open();
+            Cursor aCursor = mDbOpenHelper.getAllColumns();;
+            ;
+
+            if (aCursor.getCount() != 0) {
+                aCursor.moveToNext();
+                Log.d(Global.TAG,"name " + aCursor.getColumnIndex("name") );
+                Log.d(Global.TAG,"name " + aCursor.getString(aCursor.getColumnIndex("name")));
+
+                Global.ToName=aCursor.getString(aCursor.getColumnIndex("name"));
             }
+
+
+            Intent i= new Intent(context, ReceiveActivity.class );;
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(i);
+
         } else if(action.equals("com.example.service.RECEIVEACCEPT")){
 
-            Intent i= new Intent(context, AcceptActivity.class );
-            i.putExtra("call",true);
-            PendingIntent pi_activity = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_ONE_SHOT);
 
-            try {
-                pi_activity.send();
-            } catch (PendingIntent.CanceledException e) {
-                e.printStackTrace();
-            }
+            Intent i= new Intent(context, AcceptActivity.class );
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.putExtra("call",true);
+            context.startActivity(i);
 
             CallActivity.contextMain.finish();
-        }else if(action.equals("com.example.service.EXIT")){
-
-            Intent i= new Intent(context, MainActivity.class );
-            PendingIntent pi_activity = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_ONE_SHOT);
-
-            try {
-                pi_activity.send();
-            } catch (PendingIntent.CanceledException e) {
-                e.printStackTrace();
-            }
-
+        } else if(action.equals("com.example.service.CALLCANCEL")){
+            //전화끊기
+            context.stopService(new Intent(context,VideoViewService.class));
+//            context.startActivity(new Intent(context,MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            ReceiveActivity.contextMain.finish();
+        } else if(action.equals("com.example.service.RECEIVECANCEL")){
+            //전화끊기
+            context.stopService(new Intent(context,VideoViewService.class));
+            context.startActivity(new Intent(context,MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            CallActivity.contextMain.finish();
+            Toast.makeText(context, "상대방이 통화를 거절했습니다", Toast.LENGTH_SHORT).show();
+        } else if(action.equals("com.example.service.EXIT")){
+            Toast.makeText(context, "통화가 종료되었습니다", Toast.LENGTH_SHORT).show();
+            context.stopService(new Intent(context,VideoViewService.class));
             AcceptActivity.contextMain.finish();
         }
 
-       if(action.equals(intent.ACTION_BOOT_COMPLETED)) {
-            liveService(context);
-        }else if(action.equals(intent.ACTION_POWER_CONNECTED)) {
-            liveService(context);
-        }else if(action.equals(intent.ACTION_POWER_DISCONNECTED)) {
-            liveService(context);
-        } else if(action.equals(intent.ACTION_USER_PRESENT)) {
-            liveService(context);
-       } else if(action.equals(intent.ACTION_PACKAGE_RESTARTED)) {
-            liveService(context);
-       } else if(action.equals(intent.ACTION_PACKAGE_FIRST_LAUNCH)) {
-            liveService(context);
-       }else if(action.equals(intent.ACTION_PACKAGE_ADDED)) {
+       if(action.equals(intent.ACTION_BOOT_COMPLETED) || action.equals(intent.ACTION_POWER_CONNECTED) || action.equals(intent.ACTION_POWER_DISCONNECTED)
+               || action.equals(intent.ACTION_USER_PRESENT) || action.equals(intent.ACTION_SCREEN_OFF) || action.equals(intent.ACTION_TIME_TICK)) {
            liveService(context);
-       }
+       }else if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+            try {
+                ConnectivityManager connectivityManager =
+                        (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
+                NetworkInfo _wifi_network = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                if(_wifi_network != null) {
+
+                    if(_wifi_network != null && activeNetInfo != null){
+                        Log.d(Global.TAG,"wifi, 3g 둘 중 하나라도 있을 경우 " );
+                        liveService(context);
+                    }
+                    else{
+                        Log.d(Global.TAG,"wifi, 3g 둘 다 없을 경우 "  );
+                    }
+                }
+            } catch (Exception e) {
+                Log.i("ULNetworkReceiver", e.getMessage());
+            }
+        }
 
     }
 
@@ -88,25 +110,16 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
         ActivityManager manager =  (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
 
 
-        if(MqttService.getInstance()!=null){
-            if(!MqttService.getInstance().sampleClient.isConnected()) {
-                try {
-                    MqttService.getInstance().sampleClient.connect();
-                } catch (MqttException e) {
-
-                }
-            }else{
-                Log.i(Global.TAG,"Mqtt : " + MqttService.getInstance().sampleClient.isConnected() );
-
-            }
-        }
 
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
 //            Log.d(Global.TAG,"실행중인 서비스  : "+ service.service.getClassName());
 
             if (MqttService.class.getName().equals(service.service.getClassName())) {
                 Log.i(Global.TAG,"Service on" );
-                  return true;
+
+                if(!MqttService.getInstance().sampleClient.isConnected()) startService(context);
+                else Log.i(Global.TAG,"MQTT on" );
+                return true;
             }
         }
         Log.e(Global.TAG,"Service off" );
@@ -114,19 +127,12 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
         return false;
 
-
     }
 
+
     void startService(Context context){
-
         Intent service = new Intent(context,MqttService.class);
-        PendingIntent pi_service = PendingIntent.getService(context, 0, service, PendingIntent.FLAG_ONE_SHOT);
-        try {
-            pi_service.send();
-        } catch (PendingIntent.CanceledException e) {
-            e.printStackTrace();
-        }
-
+        context.startService(service);
     }
 
 
@@ -135,7 +141,6 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
         if(mWakeLock != null) {
             return;
         }
-
 
         PowerManager powerManager =
                 (PowerManager)context.getSystemService(

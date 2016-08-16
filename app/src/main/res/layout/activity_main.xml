@@ -46,10 +46,11 @@
 
         <ImageButton
 
+            android:id="@+id/info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-              android:src="@drawable/info"
+            android:src="@drawable/info"
             android:layout_gravity="right"
             />
 

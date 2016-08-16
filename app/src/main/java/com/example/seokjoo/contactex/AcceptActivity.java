@@ -6,10 +6,13 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import com.example.seokjoo.contactex.global.Global;
@@ -17,7 +20,6 @@ import com.example.seokjoo.contactex.global.VideoCodec;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.VideoRendererGui;
 
 import java.nio.ByteBuffer;
 
@@ -51,21 +53,19 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
         surface = screen.getHolder().getSurface();
 
 
+        VideoViewService.getInstance().displaySide();
+
+        //클릭 애니메이션
+        final Animation anim = AnimationUtils.loadAnimation
+                (this, // 현재화면 제어권자
+                        R.anim.button_click);      // 에니메이션 설정한 파일
+
         findViewById(R.id.exit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //전화 끊기
-//                VideoRendererGui.remove(VideoViewService.getInstance().localRender);
-//                VideoRendererGui.remove(VideoViewService.getInstance().remoteRender);
-                VideoRendererGui.dispose();
-                VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
+                findViewById(R.id.exit).startAnimation(anim);
 
-
-                if(mRecorder!=null) {
-                    mRecorder.quit();
-                    mRecorder = null;
-                }
-
+                //전화끊기
                 JSONObject payload = new JSONObject();
                 try{
                     payload.put("type","exit");
@@ -74,10 +74,13 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
                 }
                 MqttService.getInstance().publish(Global.ToTopic,payload.toString());
                 moveMain();
+
+
             }
 
 
         });
+
 
 
          boolean IsCall = getIntent().getBooleanExtra("call",false);
@@ -110,7 +113,8 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
 
     private void moveMain() {
-        startActivity(new Intent(this,MainActivity.class));
+        Toast.makeText(this, "통화가 종료되었습니다", Toast.LENGTH_SHORT).show();
+        stopService(new Intent(this,VideoViewService.class));
         this.finish();
     }
 
@@ -122,8 +126,24 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
             mDecorder= new ScreenDecoder(this);
 
         mDecorder.init(surface,buffer);
-//        mDecorder.start();
-        Log.e(Global.TAG_,"startDecoder");
+         Log.e(Global.TAG_,"startDecoder");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+//        WebRtcClient.getmInstance().removeConnection();
+
+        if(mRecorder!=null) {
+            mRecorder.quit();
+            mRecorder = null;
+        }
+
+        if(mDecorder!=null) {
+            stopDecoder();
+        }
+
     }
 
     @Override
@@ -134,5 +154,20 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
             mDecorder = null;
             Log.e(Global.TAG_,"stopDecoder");
         }
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        switch (keyCode) {
+            //하드웨어 뒤로가기 버튼에 따른 이벤트 설정
+            case KeyEvent.KEYCODE_BACK:
+                moveTaskToBack(true);
+            default:
+                break;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }

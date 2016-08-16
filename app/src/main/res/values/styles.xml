@@ -5,7 +5,22 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">#F39C12</item>
         <item name="colorPrimaryDark">#F39C12</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/highlighted_text_material_dark</item>
+        <item name="android:navigationBarColor">#F39C12</item>
+        <item name="android:statusBarColor">#F39C12</item>
+    </style>
+
+    <style name="CustomWelcomeScreenTheme" parent="WelcomeScreenTheme">
+        <item name="welcomeIndicatorStyle">@style/WelcomeScreenPageIndicator.Custom</item>
+        <item name="welcomeTitleTextStyle">@style/WelcomeScreenText.Title.Centered</item>
+    </style>
+
+    <style name="WelcomeScreenPageIndicator.Custom">
+        <item name="animated">true</item>
+    </style>
+
+    <style name="WelcomeScreenText.Title.Centered.Custom">
+        <item name="android:textSize">30sp</item>
     </style>
 
 </resources>

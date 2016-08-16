@@ -38,7 +38,9 @@ public class SplashActivity extends Activity {
 
         //내 전화번호 찾기
         TelephonyManager telManager = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+        Global global =new Global(this);
         Global.Mytopic = telManager.getLine1Number().substring(1);
+        global.putString("myTopic",Global.Mytopic);
 
         Log.e("ANDROES", "내 전화번호 " + Global.Mytopic);
 
@@ -175,12 +177,10 @@ public class SplashActivity extends Activity {
             //백그라운드 작업 전 UI 작업
 
             super.onPreExecute();
-            Log.e("ANDROES", "1 ");
         }
 
         @Override
         protected Object doInBackground(Object[] objects) {
-            Log.e("ANDROES", "2 ");
 
             phoneBook();
             return null;
@@ -189,8 +189,6 @@ public class SplashActivity extends Activity {
         //성공, 실패로 나누어서 실패시 재연결로 하기
         @Override
         protected void onPostExecute(Object o) {
-            Log.e("ANDROES", "3 ");
-
             super.onPostExecute(o);
             hd.post(new splashhandler());
         }

@@ -2,23 +2,21 @@ package com.example.seokjoo.contactex;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.projection.MediaProjection;
-import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.seokjoo.contactex.global.Global;
-import com.example.seokjoo.contactex.global.VideoCodec;
 
 import net.frakbot.jumpingbeans.JumpingBeans;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.VideoRendererGui;
 
 /**
  * Created by Seokjoo on 2016-08-01.
@@ -27,12 +25,13 @@ public class CallActivity extends Activity{
 
     public static Activity contextMain;
 
+    VideoViewService videoViewService;
+    Intent videoServiceIntent=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.call_layout);
-
         // Append jumping dots
         final TextView textView1 = (TextView) findViewById(R.id.calling);
         final JumpingBeans jp =JumpingBeans.with(textView1)
@@ -55,16 +54,19 @@ public class CallActivity extends Activity{
         startVideoService();
 
 
+        //클릭 애니메이션
+        final Animation anim = AnimationUtils.loadAnimation
+                (this, // 현재화면 제어권자
+                        R.anim.button_click);      // 에니메이션 설정한 파일
+
+
+        TextView callingName = (TextView)findViewById(R.id.callingName);
+        callingName.setText(Global.ToName);
 
         findViewById(R.id.callOFF).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                //전화끊기
-                VideoRendererGui.dispose();
-                VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
-
-
+                findViewById(R.id.callOFF).startAnimation(anim);
                 JSONObject payload = new JSONObject();
                 try{
                     payload.put("type","callcancel");
@@ -74,10 +76,11 @@ public class CallActivity extends Activity{
 
                 MqttService.getInstance().publish(Global.ToTopic,payload.toString());
 
-                callMain();
-
+                retrunMain();
+                //전화끊기
                 stopService(videoServiceIntent);
                 jp.stopJumping();
+
             }
 
 
@@ -86,13 +89,11 @@ public class CallActivity extends Activity{
 
     }
 
-    private void callMain() {
+    private void retrunMain() {
         startActivity(new Intent(this,MainActivity.class));
         this.finish();
     }
 
-    VideoViewService videoViewService;
-    Intent videoServiceIntent=null;
     private void startVideoService() {
         videoServiceIntent = new Intent(this,VideoViewService.class);
         this.startService(videoServiceIntent);
@@ -102,9 +103,20 @@ public class CallActivity extends Activity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(videoServiceIntent!=null)
-            stopService(videoServiceIntent);
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        switch (keyCode) {
+            //하드웨어 뒤로가기 버튼에 따른 이벤트 설정
+            case KeyEvent.KEYCODE_BACK:
+                moveTaskToBack(true);
+            default:
+                break;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
 
 }

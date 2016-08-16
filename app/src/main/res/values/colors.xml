@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+
+    <color name="orange_background">#5ea0a4</color>
+    <color name="purple_background">#8BC34A</color>
+
+
+    <color name="blue_background">#ed7b76</color>
+    <color name="teal_background">#FF9800</color>
+    <color name="red_background">#FFC107</color>
+    <color name="darkblue_background">#2d4255</color>
+
+
 </resources>

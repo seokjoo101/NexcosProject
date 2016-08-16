@@ -62,7 +62,7 @@ public class ScreenRecorder extends Thread implements VideoCodec {
 
     @Override
     public void run() {
-        Log.d(TAG, "Screen recording running... " );
+        Log.d(TAG, "화면 공유를 시작합니다" );
 
         try {
             try {

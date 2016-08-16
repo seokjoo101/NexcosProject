@@ -86,7 +86,10 @@ public class WebRtcClient {
         }
     }
 
-    public void sendMessage(String to, String type, JSONObject payload) throws JSONException {
+    public void sendMessage(JSONObject payload) throws JSONException {
+
+        payload.put("channel","videochannel");
+
         MqttService.getInstance().publish(Global.ToTopic,payload.toString());
 
 //        Log.d(Global.TAG,payload.toString());
@@ -119,9 +122,11 @@ public class WebRtcClient {
      */
     public void onDestroy() {
 
+
         peer.pc.dispose();
         videoSource.dispose();
         factory.dispose();
+
     }
 
 
@@ -159,6 +164,7 @@ public class WebRtcClient {
 
     private void setCamera(){
         localMS = factory.createLocalMediaStream("ARDAMS");
+
         if(pcParams.videoCallEnabled){
             MediaConstraints videoConstraints = new MediaConstraints();
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(pcParams.videoHeight)));
@@ -174,6 +180,7 @@ public class WebRtcClient {
         localMS.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
 
         mListener.onLocalStream(localMS);
+
 
         peer = new Peer();
 
@@ -211,9 +218,6 @@ public class WebRtcClient {
         void onLocalStream(MediaStream localStream);
 
         void onAddRemoteStream(MediaStream remoteStream);
-
-        void onRemoveRemoteStream();
-
 
     }
 
@@ -309,7 +313,7 @@ public class WebRtcClient {
             pc.addStream(localMS); //, new MediaConstraints()
 
             // DataChannel 의 Label 과 init 객체의 id가 같아야 한다
-            mListener.onStatusChanged("CONNECTING");
+//            mListener.onStatusChanged("CONNECTING");
 
             DataChannel.Init da = new DataChannel.Init();
             da.id = 1;
@@ -334,7 +338,7 @@ public class WebRtcClient {
 
                 //OFFER 혹은 ANSWER 성공적으로 만들어 졌을 때
                 Log.i(Global.TAG,"sdp.type.canonicalForm()  : "+ sdp.type.canonicalForm());
-                sendMessage(Global.ToTopic, sdp.type.canonicalForm(), payload);
+                sendMessage(payload);
 
                 pc.setLocalDescription(Peer.this, sdp);
 
@@ -368,7 +372,7 @@ public class WebRtcClient {
 
             if(iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
                 removeConnection();
-                mListener.onStatusChanged("통화 종료");
+                mListener.onStatusChanged("통화가 종료되었습니다");
             }
         }
 
@@ -393,7 +397,7 @@ public class WebRtcClient {
                 payload.put("candidate", candidate.sdp); //String
                 payload.put("type" , "candidate");
 
-                sendMessage(id, "candidate", payload);
+                sendMessage(payload);
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -411,9 +415,9 @@ public class WebRtcClient {
         @Override
         public void onRemoveStream(MediaStream mediaStream) {
             Log.d(Global.TAG,"onRemoveStream "+mediaStream.label());
-            mListener.onRemoveRemoteStream();
-            peer.pc.removeStream(mediaStream);
-        }
+             removeConnection();
+
+            }
 
         @Override
         public void onDataChannel(DataChannel dataChannel) {
@@ -441,8 +445,7 @@ public class WebRtcClient {
 
     public void removeConnection() {
         peer.pc.close();
-        mListener.onRemoveRemoteStream();
-        mListener.onStatusChanged("통화 종료");
+        mListener.onStatusChanged("통화가 종료되었습니다");
     }
 
     void reCall(){

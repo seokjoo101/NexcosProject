@@ -90,6 +90,7 @@ public class ListViewAdapter extends BaseAdapter
                 Cursor aCursor = mDbOpenHelper.getColumn(pos+1);
 
                 Global.ToTopic=aCursor.getString(aCursor.getColumnIndex("phone"));
+                Global.ToName=aCursor.getString(aCursor.getColumnIndex("name"));
 
                 Log.i(Global.TAG, "toTopic " +aCursor.getString(aCursor.getColumnIndex("phone")));
 
@@ -97,6 +98,7 @@ public class ListViewAdapter extends BaseAdapter
                 try{
                     call.put("myphone",Global.Mytopic);
                     call.put("type","calling");
+
                 }catch(JSONException ex){
                     Log.i(Global.TAG,"json fail " +ex);
                 }

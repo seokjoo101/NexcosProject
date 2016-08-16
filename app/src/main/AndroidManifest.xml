@@ -36,7 +36,8 @@
         <activity android:name=".ReceiveActivity" />
         <activity android:name=".AcceptActivity" />
         <activity android:name=".MainActivity"></activity>
-
+        <activity android:name=".MyWelcomeActivity"
+            android:theme="@style/WelcomeScreenTheme"/>
         <service
             android:name=".MqttService"
             android:enabled="true"
@@ -45,21 +46,21 @@
         <receiver
             android:name=".BroadcastReceiver"
             android:enabled="true">
-            <intent-filter>
+            <intent-filter android:priority="9999">
                 <action android:name="com.example.service.DESTROY" />
                 <action android:name="com.example.service.CALL" />
                 <action android:name="com.example.service.RECEIVEACCEPT" />
                 <action android:name="com.example.service.EXIT" />
+                <action android:name="com.example.service.CALLCANCEL" />
+                <action android:name="com.example.service.RECEIVECANCEL" />
+
+
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
                 <action android:name="android.intent.action.USER_PRESENT" />
-             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_FIRST_LAUNCH" />
-                <action android:name="android.intent.action.PACKAGE_RESTARTED" />
-                <action android:name="android.intent.action.PACKAGE_ADDED." />
-                <data android:scheme="package"/>
+                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
+
             </intent-filter>
         </receiver>
 

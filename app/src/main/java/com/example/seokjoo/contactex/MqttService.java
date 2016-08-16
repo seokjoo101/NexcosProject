@@ -1,14 +1,17 @@
 package com.example.seokjoo.contactex;
 
 import android.annotation.SuppressLint;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.seokjoo.contactex.global.Global;
 
@@ -20,9 +23,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONObject;
-import org.webrtc.VideoRendererGui;
-
-import java.util.ArrayList;
 
 public class MqttService extends Service implements MqttCallback {
     private static MqttService mInstance;
@@ -42,7 +42,7 @@ public class MqttService extends Service implements MqttCallback {
         if (mInstance != null)
             return mInstance;
         else {
-            return null;
+            return new MqttService();
         }
     }
 
@@ -76,19 +76,32 @@ public class MqttService extends Service implements MqttCallback {
 
     }
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(Global.TAG, "Service Start" );
+
+        if (mInstance == null) {
+            Log.i(Global.TAG, "동적 리시버 등록 " );
+
+            mInstance = this;
+
+            IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+
+            intentFilter.addAction(intent.ACTION_SCREEN_OFF);
+            intentFilter.addAction(intent.ACTION_TIME_TICK);
+            this.registerReceiver(new com.example.seokjoo.contactex.BroadcastReceiver(),intentFilter);
+
+        }
 
 
-        if (mInstance == null) mInstance = this;
+        Global global =new Global(this);
+        Global.Mytopic=global.getString("myTopic");
 
-
-        connectMQTT();
+        if(Global.Mytopic!=null)
+             connectMQTT();
 
 
         return START_STICKY;
-//        return super.onStartCommand(intent, flags, startId);
     }
 
     private void connectMQTT() {
@@ -97,6 +110,8 @@ public class MqttService extends Service implements MqttCallback {
         int qos = 1;
 
         try {
+
+
             sampleClient = new MqttClient(broker, clientId, persistence);
 
 
@@ -106,8 +121,10 @@ public class MqttService extends Service implements MqttCallback {
 
                 sampleClient.connect(connOpts);
                 sampleClient.setCallback(this);
+
+
+                Log.e(Global.TAG, "connect : " + sampleClient.isConnected() + " / " + Global.Mytopic);
                 sampleClient.subscribe(Global.Mytopic, qos);
-                Log.e(Global.TAG, "connect : " + sampleClient.isConnected());
             }
         } catch (MqttException me) {
             Log.e(Global.TAG, "connect fail ");
@@ -181,13 +198,12 @@ public class MqttService extends Service implements MqttCallback {
         JSONObject payload = new JSONObject(message.toString());
 
         if (WebRtcClient.getmInstance() != null)
-            WebRtcClient.getmInstance().getMessage(message.toString());
+                WebRtcClient.getmInstance().getMessage(message.toString());
 
         if (payload.getString("type").equalsIgnoreCase("contactoffer")) {
 
             if (payload.has("answer")) {
                 Log.i(Global.TAG, "contact answer 받음");
-
 
                 mDbOpenHelper = new DbOpenHelper(this);
                 mDbOpenHelper.open();
@@ -196,8 +212,10 @@ public class MqttService extends Service implements MqttCallback {
 
                 if (aCursor.getCount() == 0) {
                     mDbOpenHelper.insertColumn(payload.getString("yourname"), payload.getString("yourphone"));
-                }
+                    ((MainActivity) MainActivity.contextMain).addFriendList();
 
+
+                }
 
             } else {
                 Log.i(Global.TAG, "contact offer 받음");
@@ -209,26 +227,20 @@ public class MqttService extends Service implements MqttCallback {
             Intent intent = new Intent("com.example.service.CALL");
             sendBroadcast(intent);
         } else if (payload.getString("type").equalsIgnoreCase("callcancel")) {
-
             //전화끊기
-            VideoRendererGui.dispose();
-            VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
-            ReceiveActivity.contextMain.finish();
+            Intent intent = new Intent("com.example.service.CALLCANCEL");
+            sendBroadcast(intent);
 
         } else if (payload.getString("type").equalsIgnoreCase("receivecancel")) {
             //전화끊기
-            VideoRendererGui.dispose();
-            VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
-            CallActivity.contextMain.finish();
+            Intent intent = new Intent("com.example.service.RECEIVECANCEL");
+            sendBroadcast(intent);
+
 
         } else if (payload.getString("type").equalsIgnoreCase("receiveaccept")) {
             Intent intent = new Intent("com.example.service.RECEIVEACCEPT");
             sendBroadcast(intent);
         }else if (payload.getString("type").equalsIgnoreCase("exit")) {
-            //전화끊기
-            VideoRendererGui.dispose();
-            VideoViewService.getInstance().windowManager.removeViewImmediate(VideoViewService.getInstance().windowView);
-
             Intent intent = new Intent("com.example.service.EXIT");
             sendBroadcast(intent);
         }
