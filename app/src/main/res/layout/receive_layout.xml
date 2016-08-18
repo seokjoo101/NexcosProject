@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:background="#F39C12"
 
-    android:paddingTop="60dp"
+    android:paddingTop="50dp"
     android:paddingBottom="40dp"
     >
 
@@ -15,14 +15,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal|top"
-        android:textSize="32sp"
+        android:textSize="28sp"
         android:layout_gravity="center_horizontal|top"
         android:text="전화가 왔습니다"
 
         android:textColor="@android:color/white"/>
     <TextView
         android:id="@+id/receiving"
-        android:paddingTop="10dp"
+        android:paddingTop="14dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal|top"
@@ -46,7 +46,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
-        android:src="@drawable/accept"
+        android:src="@drawable/call"
         android:background="@android:color/transparent"
         android:paddingEnd="60dp"
         />
@@ -56,7 +56,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
-        android:src="@drawable/deny"
+        android:src="@drawable/calloff"
         android:background="@android:color/transparent"
          />
 

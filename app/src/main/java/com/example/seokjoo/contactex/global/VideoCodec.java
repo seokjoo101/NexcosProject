@@ -10,7 +10,7 @@ public interface VideoCodec {
     // video size
     int width =600;
     int height =800;
-    int bitrate =800000;
+    int bitrate =1200000;
 
     // parameters for codec
     String MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_H263; // H.264 Advanced Video Coding

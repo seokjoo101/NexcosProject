@@ -100,11 +100,6 @@ public class ScreenDecoder extends Thread implements DataChannel.Observer ,Video
         try {
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
 
-            boolean first = false;
-            long startWhen = 0;
-
-
-
             while (!eosReceived ) {
                 if(configured) {
                     int outIndex = mDecoder.dequeueOutputBuffer(info, 10000);
@@ -128,7 +123,7 @@ public class ScreenDecoder extends Thread implements DataChannel.Observer ,Video
         finally {
             if(isInput){
 
-                mDecoder.stop();
+//                mDecoder.stop();
                 mDecoder.release();
 
             }
@@ -167,7 +162,6 @@ public class ScreenDecoder extends Thread implements DataChannel.Observer ,Video
             IsRun=true;
         }
 
-
         if (mBuffer.length < byteBuffer.limit()) {
             mBuffer = new byte[byteBuffer.limit()];
         }
@@ -175,7 +169,6 @@ public class ScreenDecoder extends Thread implements DataChannel.Observer ,Video
         byteBuffer.limit(0 + byteBuffer.limit());
         byteBuffer.get(mBuffer, 0, byteBuffer.limit());
         byteBuffer=ByteBuffer.wrap(mBuffer, 0, byteBuffer.limit());
-
         decode(byteBuffer);
 
 

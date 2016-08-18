@@ -5,6 +5,6 @@
 
     <android.opengl.GLSurfaceView
         android:id="@+id/glview_call"
-        android:layout_width="140dp"
-        android:layout_height="170dp" />
+        android:layout_width="130dp"
+        android:layout_height="160dp" />
 </RelativeLayout>

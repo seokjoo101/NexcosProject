@@ -1,6 +1,10 @@
 package com.example.seokjoo.contactex;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
@@ -13,6 +17,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.seokjoo.contactex.global.Global;
@@ -30,6 +35,9 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
 
     private ScreenDecoder mDecorder;
+    private NotificationManager nm = null;
+    private Notification notification = null;
+
 
     SurfaceView screen;
     Surface surface;
@@ -40,6 +48,7 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
     public static Activity contextMain;
 
+    boolean bFaceVisible=true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,10 +64,12 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
         VideoViewService.getInstance().displaySide();
 
+
         //클릭 애니메이션
         final Animation anim = AnimationUtils.loadAnimation
                 (this, // 현재화면 제어권자
                         R.anim.button_click);      // 에니메이션 설정한 파일
+
 
         findViewById(R.id.exit).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,13 +93,49 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
         });
 
 
+        findViewById(R.id.faceView).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(bFaceVisible){
 
-         boolean IsCall = getIntent().getBooleanExtra("call",false);
+                    VideoViewService.getInstance().vsv.setVisibility(View.GONE);
+                    WebRtcClient.getmInstance().videoSource.stop();
+                    ((ImageButton) findViewById(R.id.faceView)).setImageResource(R.drawable.faceon);
 
-        if(IsCall){
-            Intent captureIntent = mMediaProjectionManager.createScreenCaptureIntent();
-            startActivityForResult(captureIntent, REQUEST_CODE);
-        }
+                    surface = screen.getHolder().getSurface();
+
+                    bFaceVisible=false;
+                }else{
+                    VideoViewService.getInstance().vsv.setVisibility(View.VISIBLE);
+                    WebRtcClient.getmInstance().videoSource.restart();
+                    ((ImageButton) findViewById(R.id.faceView)).setImageResource(R.drawable.faceoff);
+
+                    bFaceVisible=true;
+                }
+            }
+        });
+
+        findViewById(R.id.recordornot).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(mRecorder!=null) {
+                    mRecorder.quit();
+                    mRecorder = null;
+                    ((ImageButton) findViewById(R.id.recordornot)).setImageResource(R.drawable.accept);
+                    recordExitMessage();
+
+                }
+                else{
+                    Intent captureIntent = mMediaProjectionManager.createScreenCaptureIntent();
+                    startActivityForResult(captureIntent, REQUEST_CODE);
+
+                }
+            }
+
+        });
+
+
 
         contextMain=this;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -98,6 +145,23 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
     }
 
 
+
+    private void recordExitMessage() {
+        JSONObject payload = new JSONObject();
+        try{
+            payload.put("type","recordexit");
+
+        }catch(JSONException ex){
+            Log.i(Global.TAG,"json fail " +ex);
+        }
+
+        MqttService.getInstance().publish(Global.ToTopic,payload.toString());
+
+        Toast.makeText(this, "화면 공유를 종료합니다.", Toast.LENGTH_SHORT).show();
+
+        nm.cancelAll();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         MediaProjection mediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, data);
@@ -105,10 +169,33 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
             Log.e("@@", "media projection is null");
             return;
         }
+        ((ImageButton) findViewById(R.id.recordornot)).setImageResource(R.drawable.deny);
 
         mRecorder = new ScreenRecorder(width, height, bitrate, 1, mediaProjection);
         mRecorder.start();
-        Toast.makeText(this, "Screen recorder is running...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "화면 공유를 시작합니다.", Toast.LENGTH_SHORT).show();
+
+
+
+        Intent intent = new Intent(getApplicationContext(),AcceptActivity.class);
+         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                 | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
+
+
+        nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notification = new Notification.Builder(getApplicationContext())
+                .setContentTitle("Nexcos")
+                .setContentText("화면 공유가 진행중입니다")
+                .setSmallIcon(R.drawable.ic_videocam_icon)
+                .setContentIntent(pendingIntent)
+                .build();
+
+         notification.flags = Notification.FLAG_NO_CLEAR;
+
+         nm.notify(1234, notification);
+
     }
 
 
@@ -135,6 +222,8 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
 //        WebRtcClient.getmInstance().removeConnection();
 
+        if(nm!=null)
+            nm.cancelAll();
         if(mRecorder!=null) {
             mRecorder.quit();
             mRecorder = null;
@@ -164,6 +253,8 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
             //하드웨어 뒤로가기 버튼에 따른 이벤트 설정
             case KeyEvent.KEYCODE_BACK:
                 moveTaskToBack(true);
+                mDecorder.configured=false;
+
             default:
                 break;
         }

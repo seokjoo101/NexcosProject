@@ -106,7 +106,12 @@ public class MqttService extends Service implements MqttCallback {
 
     private void connectMQTT() {
         broker = "tcp://61.38.158.169:1883";
-        clientId = getDeviceSerialNumber();
+
+        if(Global.Mytopic!=null)
+            clientId = Global.Mytopic;
+        else
+            clientId = getDeviceSerialNumber();
+
         int qos = 1;
 
         try {
@@ -118,10 +123,12 @@ public class MqttService extends Service implements MqttCallback {
             if (!sampleClient.isConnected()) {
                 MqttConnectOptions connOpts = new MqttConnectOptions();
                 connOpts.setCleanSession(true);
+                connOpts.setKeepAliveInterval(30);
+
+
 
                 sampleClient.connect(connOpts);
                 sampleClient.setCallback(this);
-
 
                 Log.e(Global.TAG, "connect : " + sampleClient.isConnected() + " / " + Global.Mytopic);
                 sampleClient.subscribe(Global.Mytopic, qos);
@@ -243,8 +250,13 @@ public class MqttService extends Service implements MqttCallback {
         }else if (payload.getString("type").equalsIgnoreCase("exit")) {
             Intent intent = new Intent("com.example.service.EXIT");
             sendBroadcast(intent);
+        }else if (payload.getString("type").equalsIgnoreCase("recordexit")) {
+
+             Intent intent = new Intent("com.example.service.RECORDEXIT");
+            sendBroadcast(intent);
         }
     }
+
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
@@ -255,7 +267,6 @@ public class MqttService extends Service implements MqttCallback {
     public void onRebind(Intent intent) {
         super.onRebind(intent);
         Log.i(Global.TAG, "on Rebind");
-
     }
 }
 

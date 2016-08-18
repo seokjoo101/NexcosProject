@@ -114,7 +114,7 @@ public class ReceiveActivity extends Activity {
     void accept(){
         Intent i= new Intent(this, AcceptActivity.class );
         startActivity(i);
-        ReceiveActivity.contextMain.finish();
+        this.finish();
     }
 
     @Override

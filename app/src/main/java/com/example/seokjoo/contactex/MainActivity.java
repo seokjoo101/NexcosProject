@@ -1,6 +1,7 @@
 package com.example.seokjoo.contactex;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -83,6 +84,19 @@ public class MainActivity extends Activity {
                 welcomeScreen.forceShow();
             }
         });
+
+        findViewById(R.id.sms).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.sms).startAnimation(anim);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                intent.putExtra("address", "01094037171");
+                intent.putExtra("sms_body", "http://nexcos.com 에서 Nexcos를 설치해서 친구를 추가하세요.");
+                intent.setType("vnd.android-dir/mms-sms");
+                startActivity(intent);
+            }
+        });
+
     }
 
     public void addFriendList() {
@@ -94,7 +108,7 @@ public class MainActivity extends Activity {
         while (mCursor.moveToNext()) {
 
         adapter.addItem(ContextCompat.getDrawable(this, R.drawable.ic_face_black_36dp),
-                mCursor.getString(mCursor.getColumnIndex("name")), mCursor.getString(mCursor.getColumnIndex("phone")),ContextCompat.getDrawable(this,R.drawable.ic_videocam_black_36dp));
+                mCursor.getString(mCursor.getColumnIndex("name")), mCursor.getString(mCursor.getColumnIndex("phone")),ContextCompat.getDrawable(this,R.drawable.call_mip));
 
             mInfoClass = new DbInfo(
                     mCursor.getInt(mCursor.getColumnIndex("_id")),

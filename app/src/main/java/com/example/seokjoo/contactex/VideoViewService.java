@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -202,14 +203,13 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
 
     @Override
     public void onStatusChanged(String newStatus) {
-        Handler handler =new Handler();
+        Handler handler =new Handler(Looper.getMainLooper());
         handler.post(new ToastRunnable(newStatus));
 
     }
 
 
 
-    MediaStream mediaStream;
 
     @Override
     public void onLocalStream(MediaStream localStream) {
@@ -221,7 +221,6 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
                 scalingType,true);
 
 
-        mediaStream=localStream;
      }
 
 
@@ -236,7 +235,6 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
                 LOCAL_WIDTH_CONNECTED, LOCAL_HEIGHT_CONNECTED,
                 scalingType,true);
 
-        mediaStream=remoteStream;
     }
 
 

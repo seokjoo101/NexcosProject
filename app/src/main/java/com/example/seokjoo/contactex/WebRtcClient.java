@@ -54,7 +54,9 @@ public class WebRtcClient {
     private MediaConstraints pcConstraints = new MediaConstraints();
     private MediaStream localMS;
     public VideoSource videoSource;
+    public AudioSource audioSource ;
     private RtcListener mListener;
+
 
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params) {
@@ -176,7 +178,7 @@ public class WebRtcClient {
             localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }
 
-        AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
+        audioSource = factory.createAudioSource(new MediaConstraints());
         localMS.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
 
         mListener.onLocalStream(localMS);

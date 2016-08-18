@@ -59,25 +59,30 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
             Intent i= new Intent(context, AcceptActivity.class );
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.putExtra("call",true);
             context.startActivity(i);
 
-            CallActivity.contextMain.finish();
+            if(CallActivity.contextMain!=null)
+                CallActivity.contextMain.finish();
         } else if(action.equals("com.example.service.CALLCANCEL")){
             //전화끊기
             context.stopService(new Intent(context,VideoViewService.class));
 //            context.startActivity(new Intent(context,MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            ReceiveActivity.contextMain.finish();
+            if(ReceiveActivity.contextMain!=null)
+                ReceiveActivity.contextMain.finish();
         } else if(action.equals("com.example.service.RECEIVECANCEL")){
             //전화끊기
             context.stopService(new Intent(context,VideoViewService.class));
             context.startActivity(new Intent(context,MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            CallActivity.contextMain.finish();
+            if(CallActivity.contextMain!=null)
+                CallActivity.contextMain.finish();
             Toast.makeText(context, "상대방이 통화를 거절했습니다", Toast.LENGTH_SHORT).show();
         } else if(action.equals("com.example.service.EXIT")){
             Toast.makeText(context, "통화가 종료되었습니다", Toast.LENGTH_SHORT).show();
             context.stopService(new Intent(context,VideoViewService.class));
-            AcceptActivity.contextMain.finish();
+            if(AcceptActivity.contextMain!=null)
+                AcceptActivity.contextMain.finish();
+        }else if(action.equals("com.example.service.RECORDEXIT")){
+            Toast.makeText(context, "상대방이 화면 공유를 종료합니다.", Toast.LENGTH_SHORT).show();
         }
 
        if(action.equals(intent.ACTION_BOOT_COMPLETED) || action.equals(intent.ACTION_POWER_CONNECTED) || action.equals(intent.ACTION_POWER_DISCONNECTED)

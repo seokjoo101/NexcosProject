@@ -46,6 +46,17 @@
 
         <ImageButton
 
+            android:id="@+id/sms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/sms"
+            android:layout_gravity="right"
+            android:paddingEnd="10dp"
+
+            />
+        <ImageButton
+
             android:id="@+id/info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
