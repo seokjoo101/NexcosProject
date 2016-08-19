@@ -5,6 +5,7 @@ import android.media.MediaFormat;
 /**
  * Created by Seokjoo on 2016-08-09.
  */
+
 public interface VideoCodec {
 
     // video size

@@ -97,7 +97,6 @@ public class CallActivity extends Activity{
     private void startVideoService() {
         videoServiceIntent = new Intent(this,VideoViewService.class);
         this.startService(videoServiceIntent);
-
     }
 
     @Override

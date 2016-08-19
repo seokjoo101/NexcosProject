@@ -220,8 +220,6 @@ public class MqttService extends Service implements MqttCallback {
                 if (aCursor.getCount() == 0) {
                     mDbOpenHelper.insertColumn(payload.getString("yourname"), payload.getString("yourphone"));
                     ((MainActivity) MainActivity.contextMain).addFriendList();
-
-
                 }
 
             } else {
@@ -231,6 +229,7 @@ public class MqttService extends Service implements MqttCallback {
             }
         }else if (payload.getString("type").equalsIgnoreCase("calling")) {
             Global.ToTopic = payload.getString("myphone");
+
             Intent intent = new Intent("com.example.service.CALL");
             sendBroadcast(intent);
         } else if (payload.getString("type").equalsIgnoreCase("callcancel")) {

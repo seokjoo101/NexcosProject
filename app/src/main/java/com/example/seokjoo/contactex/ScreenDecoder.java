@@ -162,9 +162,13 @@ public class ScreenDecoder extends Thread implements DataChannel.Observer ,Video
             IsRun=true;
         }
 
+        if(AcceptActivity.bRecordClick)
+            AcceptActivity.bRecordClick=false;
+
         if (mBuffer.length < byteBuffer.limit()) {
             mBuffer = new byte[byteBuffer.limit()];
         }
+
         byteBuffer.position(0);
         byteBuffer.limit(0 + byteBuffer.limit());
         byteBuffer.get(mBuffer, 0, byteBuffer.limit());

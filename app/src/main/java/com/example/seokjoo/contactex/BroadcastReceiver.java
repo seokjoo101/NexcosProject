@@ -36,19 +36,18 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
 
             releaseWakeLock();
-            mDbOpenHelper=new DbOpenHelper(context);
+
+
+            mDbOpenHelper = new DbOpenHelper(context);
             mDbOpenHelper.open();
-            Cursor aCursor = mDbOpenHelper.getAllColumns();;
-            ;
+
+            Cursor aCursor = mDbOpenHelper.getMatchPhone(Global.ToTopic);
+            Cursor bCursor = mDbOpenHelper.getColumn(aCursor.getCount());
 
             if (aCursor.getCount() != 0) {
-                aCursor.moveToNext();
-                Log.d(Global.TAG,"name " + aCursor.getColumnIndex("name") );
-                Log.d(Global.TAG,"name " + aCursor.getString(aCursor.getColumnIndex("name")));
+                Global.ToName=bCursor.getString(bCursor.getColumnIndex("name"));
 
-                Global.ToName=aCursor.getString(aCursor.getColumnIndex("name"));
             }
-
 
             Intent i= new Intent(context, ReceiveActivity.class );;
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -69,6 +68,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 //            context.startActivity(new Intent(context,MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             if(ReceiveActivity.contextMain!=null)
                 ReceiveActivity.contextMain.finish();
+
         } else if(action.equals("com.example.service.RECEIVECANCEL")){
             //전화끊기
             context.stopService(new Intent(context,VideoViewService.class));
@@ -82,7 +82,10 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
             if(AcceptActivity.contextMain!=null)
                 AcceptActivity.contextMain.finish();
         }else if(action.equals("com.example.service.RECORDEXIT")){
+
             Toast.makeText(context, "상대방이 화면 공유를 종료합니다.", Toast.LENGTH_SHORT).show();
+            AcceptActivity.bRecordClick=true;
+
         }
 
        if(action.equals(intent.ACTION_BOOT_COMPLETED) || action.equals(intent.ACTION_POWER_CONNECTED) || action.equals(intent.ACTION_POWER_DISCONNECTED)

@@ -48,18 +48,24 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
     public static Activity contextMain;
 
-    boolean bFaceVisible=true;
+    boolean bFaceVisible=false;
+
+    public static boolean bRecordClick = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.accept_layout);
 
 
+
         mDecorder= new ScreenDecoder(this);
+
         WebRtcClient.getmInstance().dataChannel.registerObserver(ScreenDecoder.getInstance());
         mMediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         screen=(SurfaceView)findViewById(R.id.screen);
         surface = screen.getHolder().getSurface();
+        WebRtcClient.getmInstance().videoSource.stop();
 
 
         VideoViewService.getInstance().displaySide();
@@ -96,6 +102,8 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
         findViewById(R.id.faceView).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                findViewById(R.id.faceView).startAnimation(anim);
+
                 if(bFaceVisible){
 
                     VideoViewService.getInstance().vsv.setVisibility(View.GONE);
@@ -118,7 +126,7 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
         findViewById(R.id.recordornot).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                findViewById(R.id.recordornot).startAnimation(anim);
                 if(mRecorder!=null) {
                     mRecorder.quit();
                     mRecorder = null;
@@ -127,8 +135,13 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
                 }
                 else{
-                    Intent captureIntent = mMediaProjectionManager.createScreenCaptureIntent();
-                    startActivityForResult(captureIntent, REQUEST_CODE);
+                    if(bRecordClick){
+                        Intent captureIntent = mMediaProjectionManager.createScreenCaptureIntent();
+                        startActivityForResult(captureIntent, REQUEST_CODE);
+                    }
+                    else{
+                        toastRecordWarning();
+                    }
 
                 }
             }
@@ -145,6 +158,9 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
     }
 
 
+    void toastRecordWarning(){
+        Toast.makeText(this, "상대방이 화면 공유 중 입니다", Toast.LENGTH_SHORT).show();
+    }
 
     private void recordExitMessage() {
         JSONObject payload = new JSONObject();
@@ -164,6 +180,7 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         MediaProjection mediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, data);
         if (mediaProjection == null) {
             Log.e("@@", "media projection is null");
@@ -171,18 +188,28 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
         }
         ((ImageButton) findViewById(R.id.recordornot)).setImageResource(R.drawable.deny);
 
+        moveTaskToBack(true);
+
         mRecorder = new ScreenRecorder(width, height, bitrate, 1, mediaProjection);
         mRecorder.start();
+
+
         Toast.makeText(this, "화면 공유를 시작합니다.", Toast.LENGTH_SHORT).show();
 
 
+        recordNotify();
+    }
+
+
+
+    public void recordNotify(){
 
         Intent intent = new Intent(getApplicationContext(),AcceptActivity.class);
-         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                 | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
 
         nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notification = new Notification.Builder(getApplicationContext())
@@ -192,12 +219,12 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
                 .setContentIntent(pendingIntent)
                 .build();
 
-         notification.flags = Notification.FLAG_NO_CLEAR;
+        notification.flags = Notification.FLAG_NO_CLEAR;
 
-         nm.notify(1234, notification);
+        nm.notify(1234, notification);
+
 
     }
-
 
     private void moveMain() {
         Toast.makeText(this, "통화가 종료되었습니다", Toast.LENGTH_SHORT).show();
@@ -220,8 +247,6 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
     protected void onDestroy() {
         super.onDestroy();
 
-//        WebRtcClient.getmInstance().removeConnection();
-
         if(nm!=null)
             nm.cancelAll();
         if(mRecorder!=null) {
@@ -232,6 +257,8 @@ public class AcceptActivity extends Activity implements ScreenDecoder.setDecoder
         if(mDecorder!=null) {
             stopDecoder();
         }
+
+
 
     }
 

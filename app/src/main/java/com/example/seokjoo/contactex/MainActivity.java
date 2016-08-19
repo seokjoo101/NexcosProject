@@ -88,6 +88,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.sms).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 findViewById(R.id.sms).startAnimation(anim);
                 Intent intent = new Intent(Intent.ACTION_VIEW);
 //                intent.putExtra("address", "01094037171");

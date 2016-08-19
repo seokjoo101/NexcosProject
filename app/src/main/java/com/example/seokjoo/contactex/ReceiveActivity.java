@@ -17,7 +17,6 @@ import net.frakbot.jumpingbeans.JumpingBeans;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.VideoRendererGui;
 
 /**
  * Created by Seokjoo on 2016-08-01.
@@ -41,8 +40,12 @@ public class ReceiveActivity extends Activity {
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
         TextView receivingName = (TextView)findViewById(R.id.receivingName);
-        receivingName.setText(Global.ToName);
 
+
+        if(Global.ToName!=null)
+            receivingName.setText(Global.ToName);
+        else
+            receivingName.setText("등록되지 않은 사용자");
         // Append jumping dots
         final TextView textView1 = (TextView) findViewById(R.id.receiving);
         final JumpingBeans jp =JumpingBeans.with(textView1)
@@ -99,6 +102,7 @@ public class ReceiveActivity extends Activity {
                 jp.stopJumping();
 
 
+
             }
         });
 
@@ -120,6 +124,7 @@ public class ReceiveActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
     }
 
     @Override

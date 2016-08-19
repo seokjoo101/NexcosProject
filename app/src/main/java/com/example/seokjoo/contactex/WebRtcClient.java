@@ -375,7 +375,10 @@ public class WebRtcClient {
             if(iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
                 removeConnection();
                 mListener.onStatusChanged("통화가 종료되었습니다");
+            }else if(iceConnectionState == PeerConnection.IceConnectionState.CONNECTED) {
+                 mListener.onStatusChanged("상대방과 연결되었습니다");
             }
+
         }
 
         @Override

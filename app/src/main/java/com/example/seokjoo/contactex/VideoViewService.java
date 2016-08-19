@@ -156,11 +156,16 @@ public class VideoViewService extends Service implements WindowTouchView,WebRtcC
         windowViewLayoutParams.x=displaySize.x;
         windowViewLayoutParams.y=displaySize.y;
         windowManager.updateViewLayout(windowView, windowViewLayoutParams);
+
+
     }
     public void displayMid(int x,int y){
         windowViewLayoutParams.x=displaySize.x/2-x/2;
         windowViewLayoutParams.y=displaySize.y/2-y/2;
         windowManager.updateViewLayout(windowView, windowViewLayoutParams);
+
+        VideoViewService.getInstance().vsv.setVisibility(View.GONE);
+
     }
 
     private View.OnTouchListener touchListener = new View.OnTouchListener() {
